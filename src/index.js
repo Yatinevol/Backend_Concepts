@@ -1,0 +1,46 @@
+// to enable this import syntax of dotenv in index.js we have added command in script(in package.json) of this file using experimental feature.
+import dotenv from "dotenv"
+import mongoose from "mongoose"
+import express from "express"
+dotenv.config({path:'./env'})
+import { DB_NAME } from "./constants.js"
+import connectDB from "./db/index.js"
+
+connectDB()
+
+
+
+
+
+
+
+
+
+
+
+
+// Approach 1:
+/*
+const app = express()
+// now connecting our Db:
+// ifies is way to define and directly call ur function(function is defined here)()
+;(async ()=>{
+    try {
+        await mongoose.connect(`${process.env.MONGODM_URI}/${DB_NAME}`)
+        console.log("your DB is connected successfully!!");
+        // using a listener of express to check if the app is running.
+        app.on("error",(error)=>{
+                console.log("error :"+error);
+                throw error
+        })
+        app.listen(process.env.PORT,()=>{
+            console.log("Your app is running on port 8000");
+        })
+    } catch (error) {
+        console.log("Error:",error);
+        throw error;
+
+    }
+    
+})()
+*/

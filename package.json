@@ -3,13 +3,24 @@
   "version": "1.0.0",
   "description": "This is a backend project making to learn about Backend.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
   "keywords": [
     "Backend",
     "javascript"
   ],
   "author": "Yatin Singh",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "-": "^0.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
 }

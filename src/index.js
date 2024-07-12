@@ -1,9 +1,6 @@
 // to enable this import syntax of dotenv in index.js we have added command in script(in package.json) of this file using experimental feature.
 import dotenv from "dotenv"
-import mongoose from "mongoose"
-import express from "express"
 dotenv.config({path:'./env'})
-import { DB_NAME } from "./constants.js"
 import connectDB from "./db/index.js"
 
 connectDB()

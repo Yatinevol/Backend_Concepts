@@ -1,7 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
-
+import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const registerUser = asyncHandler(async(req,res,next)=>{
     // take data from the user
@@ -13,6 +14,7 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     // a response is send once everything is stored in the db
     // now remove password and refresh token from the response.
     // now check if the user is created finally or not.
+    // return response.
     const {fullname,username, email,avatar} = req.body
     // doing this I can receive data .But to receive any file(img,pdf) step is different.
     console.log("email:",email);
@@ -20,17 +22,62 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     if([fullname,username, email,avatar].some((field)=>{
         field?.trim()=== ""
     })
-    )   {
+     )   {
             throw new ApiError(400,"All fields are required!")
     }
 
     
-  const registerUser=  User.findOne({
+    const registerdUser=  User.findOne({
         $or:[{ email },{ username }]
     })
-    if(registerUser){
+    if(registerdUser){
         throw new ApiError(409,"User with email or username already exists.")
     }
+
+    const avatarLocalPath = req.files?.avatar[0]?.path
+     const coverImageLocalPath = req.files?.coverImage[0]?.path 
+
+    if(!avatarLocalPath){
+        throw new ApiError(400,"avatar file is required")
+    }
+
+    //after uploading on cloudinary a response is send that we have stored then
+    const avatarCloud = await uploadOnCloudinary(avatarLocalPath)
+    const coverImageCloud = await uploadOnCloudinary(coverImageLocalPath)
+
+    if(!avatarCloud){
+        throw new ApiError(500,"avatar file is required")
+    }
+
+   const user =await User.create({
+        fullname,
+        username:username.toLowerCase(),
+        email,
+        coverImageCloud:coverImageCloud.url,
+        avatarCloud:avatarCloud.url,
+        password
+
+    })
+
+    // now to check if the user was created: and deleting password and refreshToken
+        const createdUser=   await User.findOne(user._id).select("-password -refreshToken")
+
+        if(!createdUser){
+            throw new ApiError(500,"Something went wrong while registering a user.")
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200,createdUser,"User registered successfully!")
+        )
+
+
+
+
+
+    
+
 })
+
+    
 
 export {registerUser}

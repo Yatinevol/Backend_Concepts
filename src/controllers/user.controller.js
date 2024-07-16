@@ -5,7 +5,7 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const registerUser = asyncHandler(async(req,res,next)=>{
-    // take data from the user
+    // take data from the user along with the field
     // validation of fields - no empty
     // check if the user already exists: email, username
     // check for the images and avatar
@@ -15,11 +15,13 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     // now remove password and refresh token from the response.
     // now check if the user is created finally or not.
     // return response.
-    const {fullname,username, email,avatar} = req.body
+    // i am saying that whata ever is given in these field extract that data.
+    // this is Destructuring in JavaScript; is a way to extract values from arrays or properties from objects into distinct variables
+    const {fullname,username,password, email} = req.body
     // doing this I can receive data .But to receive any file(img,pdf) step is different.
     console.log("email:",email);
 
-    if([fullname,username, email,avatar].some((field)=>{
+    if([fullname,username, email,password].some((field)=>{
         field?.trim()=== ""
     })
      )   {
@@ -27,10 +29,10 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     }
 
     
-    const registerdUser=  User.findOne({
+    const registeredUser=await  User.findOne({
         $or:[{ email },{ username }]
     })
-    if(registerdUser){
+    if(registeredUser){
         throw new ApiError(409,"User with email or username already exists.")
     }
 
@@ -42,10 +44,10 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     }
 
     //after uploading on cloudinary a response is send that we have stored then
-    const avatarCloud = await uploadOnCloudinary(avatarLocalPath)
-    const coverImageCloud = await uploadOnCloudinary(coverImageLocalPath)
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
-    if(!avatarCloud){
+    if(!avatar){
         throw new ApiError(500,"avatar file is required")
     }
 
@@ -53,8 +55,8 @@ const registerUser = asyncHandler(async(req,res,next)=>{
         fullname,
         username:username.toLowerCase(),
         email,
-        coverImageCloud:coverImageCloud.url,
-        avatarCloud:avatarCloud.url,
+        coverImage:coverImage.url,
+        avatar:avatar.url,
         password
 
     })
@@ -69,12 +71,6 @@ const registerUser = asyncHandler(async(req,res,next)=>{
         return res.status(200).json(
             new ApiResponse(200,createdUser,"User registered successfully!")
         )
-
-
-
-
-
-    
 
 })
 

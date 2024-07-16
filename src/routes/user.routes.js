@@ -6,13 +6,13 @@ const router = Router()
     // post send a request body to the client.
     router.route("/register").post(
         // this is that step of saving on local server then uploading it on the cloudinary server.
-        upload.fields({
+        upload.fields([{
             name:"avatar",
             maxCount:1
         },{
             name:"coverImage",
             maxCount:2
-        }),
+        }]),
         registerUser)
 
 

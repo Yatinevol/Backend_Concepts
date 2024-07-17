@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js";
+import { loginUser, registerUser } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router()
     // post send a request body to the client.
@@ -14,7 +15,12 @@ const router = Router()
             maxCount:2
         }]),
         registerUser)
-
+    
+    router.route("/login").post(loginUser)    
+    router.route("/logout").post(
+        verifyJWT,
+        logoutUser
+    )
 
 // one thing when u use default then u can the function name in other files.
 export default router

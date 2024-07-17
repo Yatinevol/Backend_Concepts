@@ -18,6 +18,7 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     // i am saying that whata ever is given in these field extract that data.
     // this is Destructuring in JavaScript; is a way to extract values from arrays or properties from objects into distinct variables
     const {fullname,username,password, email} = req.body
+    console.log(req.body);
     // doing this I can receive data .But to receive any file(img,pdf) step is different.
     console.log("email:",email);
 
@@ -37,7 +38,11 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     }
 
     const avatarLocalPath = req.files?.avatar[0]?.path
-     const coverImageLocalPath = req.files?.coverImage[0]?.path 
+    //  const coverImageLocalPath = req.files?.coverImage[0]?.path 
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     if(!avatarLocalPath){
         throw new ApiError(400,"avatar file is required")
@@ -55,7 +60,7 @@ const registerUser = asyncHandler(async(req,res,next)=>{
         fullname,
         username:username.toLowerCase(),
         email,
-        coverImage:coverImage.url,
+        coverImage:coverImage.url || "",
         avatar:avatar.url,
         password
 

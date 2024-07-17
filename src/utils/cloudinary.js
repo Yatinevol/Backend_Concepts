@@ -5,7 +5,7 @@ cloudinary.config({
     cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
     api_key:process.env.CLOUDINARY_API_KEY,
     api_secret:process.env.CLOUDINARY_API_SECRET
-})
+}) 
 
 // uploading file is a time consuming process.
 const uploadOnCloudinary =async function(localFilePath){
@@ -17,7 +17,8 @@ const uploadOnCloudinary =async function(localFilePath){
         })
         // file has been uploaded
         console.log("file has been uploaded on cloudinary!!!",response.url);
-        console.log(response);
+        // console.log(response);
+        fs.unlinkSync(localFilePath)
         return response
     } catch (error) {
         // now suppose file is not uploaded on the server so we need to delete localfile path from the local server so we use unlink (deleting it) 

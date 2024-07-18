@@ -4,11 +4,12 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+
 const generateAccessandRefreshTokens = async (userId) => {
         // object called user.
         const user =await  User.findById(userId)
-        const accessToken   =      user.generateAccessToken()
-        const refreshToken  =      user.generateRefreshToken()
+        const accessToken   =    await  user.generateAccessToken()
+        const refreshToken  =    await   user.generateRefreshToken()
         user.refreshToken = refreshToken
         // this save()function validates every field but we do not want to validate the password 
        await user.save({validBeforeSave:false})
@@ -99,11 +100,11 @@ const loginUser = asyncHandler(async (req, res, next)=>{
     // send refresh and access token
     // send cookie
     const {username, email, password} = req.body
-    if(!email || !username){
+    if(!email && !username){
         throw new ApiError(400, "username or email is required.")
     }
 
-    const user = User.findOne({
+    const user =await User.findOne({
         // mongoose provides an operators to check for both the fields once they are checked an object is returned.
         $or : [{ username }, { email }]
     })
@@ -112,7 +113,7 @@ const loginUser = asyncHandler(async (req, res, next)=>{
         throw new ApiError(404,"User does not exist.")
     }
 
-    const isPasswordValid = await user.isPasswordCorrect(password)
+    const isPasswordValid = await user.isPasswordCorrect(password);
 
     if(!isPasswordValid){
         throw new ApiError(401, "invalid user credentials")
@@ -127,24 +128,25 @@ const loginUser = asyncHandler(async (req, res, next)=>{
         secure:true
     }
     res
-    .status(200)
-    .cookie("accessToken",accessToken,options)
-    .cookie("refreshToken",refreshToken,options)
+    .status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options)
     .json(
-        200,
-        {
-            user : loggedInUser , accessToken , refreshToken
-        },
-        "User is logged in successfully"
+        new ApiResponse(
+            200,
+            "User logged In successfully!",
+            {
+                user:loggedInUser,accessToken,refreshToken
+            }
+        )
     )
 })    
 
 const logoutUser = asyncHandler(async (req, res)=>{
     // to logout u just need to delete accesstoken and refreshtoken from the user and database.
     // first thing is that u do not have user so u cannot access user._id feature here to delete the access token . so do that we first need to create a middleware.
-        User.findByIdAndUpdate(
+       await User.findByIdAndUpdate(
             req.user._id,
             {
+                // now we get an operator from mongoose:
                 $set:{
                     refreshToken:undefined
                 }
@@ -163,7 +165,7 @@ const logoutUser = asyncHandler(async (req, res)=>{
         .status(200)
         .clearCookie("accessToken",options)
         .clearCookie("refreshToken",options)
-        .json(new ApiResponse(200,{},"User logged out successfully!!"))
+        .json(new ApiResponse(200,"User logged out successfully!!",{}))
 
 
 })

@@ -214,4 +214,100 @@ const refreshAccessToken  = asyncHandler(async(req,res)=>{
    }
 
 })
-export { registerUser, loginUser, logoutUser,refreshAccessToken }
+
+const changeCurrentPassword = asyncHandler(async(req, res)=>{
+    //we are already logged in so we know that we saved user on the req so we will access the user directly here:
+    const {oldPassword, newPassword} = req.body
+
+    const user = await User.findById(req.user._id)
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if(!isPasswordCorrect) throw new ApiError(400,"inavalid old password");
+
+    // here only value is set but not saved in the use database:
+    user.password = newPassword;
+    // saving on the database:
+     await user.save({validateBeforeSave: falses})
+
+    return res.status(200)
+    .json( new ApiResponse(200,{},"Your password is updated successfully!!"))
+
+
+   
+})
+
+const getCurrentUser = asyncHandler(async (req,res)=>{
+    return res
+    .status(200)
+    .json(new ApiResponse(200,req.user,"User fetched successfully!"))
+})
+
+const updateAccountDetails =asyncHandler(async(req,res)=>{
+    const {fullname, email} =req.body;
+
+    if(!fullname && !email){
+        throw new ApiError("username or email is required!")
+    }
+
+        /*
+    const user = await User.findById(req.user._id)
+
+    if(!user){
+        throw new ApiError("something went wrong!")
+
+    }
+
+        there is this and also one more way to do this is findByIdandUpdate
+        user.fullname = fullname;
+        user.email = email;
+    */
+
+        User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{
+                fullname,
+                email:email
+            }
+        },
+        {   
+            // this will  return the new updated object
+            new:true
+        }
+        ).select("-password")
+
+    
+    return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Account details updated successfully"))
+}) 
+
+const updateUserAvatar= asyncHandler(async (req, res)=>{
+    // const newAvatarPath= req.files?.avatar[0]?.path
+    const newAvatarPath = req.file?.path
+
+    if(!newAvatarPath){
+        throw new ApiError(400,"avatar file is missing ")
+    }
+
+    const avatar  = await uploadOnCloudinary(newAvatarPath)
+
+    if(!avatar.url){
+        throw new ApiError(400,"Error while uploading on cloudinary")
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id,
+        {
+            $set:{
+                avatar: avatar.url
+            }
+        },{new:true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(200,{user},"avatar changed successfully!")
+
+})
+export { registerUser, loginUser, logoutUser,refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar}

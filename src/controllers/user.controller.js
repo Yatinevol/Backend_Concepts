@@ -53,6 +53,8 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     }
 
     const avatarLocalPath = req.files?.avatar[0]?.path
+    // console.log(avatarLocalPath);
+
     //  const coverImageLocalPath = req.files?.coverImage[0]?.path 
     let coverImageLocalPath;
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
@@ -60,15 +62,16 @@ const registerUser = asyncHandler(async(req,res,next)=>{
     }
 
     if(!avatarLocalPath){
-        throw new ApiError(400,"avatar file is required")
+        throw new ApiError(400,"avatar file is bhul gya multer")
     }
 
     //after uploading on cloudinary a response is send that we have stored then
     const avatar = await uploadOnCloudinary(avatarLocalPath)
+    
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
     if(!avatar){
-        throw new ApiError(500,"avatar file is required")
+        throw new ApiError(500,"avatar file is bhul gya cloudinary")
     }
 
    const user =await User.create({
